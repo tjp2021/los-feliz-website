@@ -13,7 +13,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-const LFAR_PAGES = array( 'home', 'about', 'adopt', 'get-involved', 'contact', 'donate' );
+const LFAR_PAGES = array( 'home', 'about', 'adopt', 'get-involved', 'contact', 'donate', 'events', 'resources' );
+
+/**
+ * Stylesheet/script slug for a page. Events and Resources reuse Home's layout.
+ *
+ * @param string $key Page slug from lfar_page_key(), or ''.
+ */
+function lfar_asset_key( $key ) {
+	if ( in_array( $key, array( 'events', 'resources' ), true ) ) {
+		return 'home';
+	}
+	return $key ? $key : 'home';
+}
 
 // Instagram feed on About, Get Involved and Adopt (Settings → LFAR Instagram).
 require_once get_theme_file_path( 'inc/instagram.php' );
@@ -122,9 +134,10 @@ add_action(
 add_action(
 	'wp_enqueue_scripts',
 	function () {
-		$key = lfar_page_key();
-		$css = 'assets/css/' . ( $key ? $key : 'home' ) . '.css';
-		$js  = 'assets/js/' . ( $key ? $key : 'common' ) . '.js';
+		$key   = lfar_page_key();
+		$asset = lfar_asset_key( $key );
+		$css   = 'assets/css/' . $asset . '.css';
+		$js    = 'assets/js/' . ( $key ? $asset : 'common' ) . '.js';
 		wp_enqueue_style( 'lfar-base', get_theme_file_uri( 'assets/css/base.css' ), array(), lfar_ver( 'assets/css/base.css' ) );
 		wp_enqueue_style( 'lfar-page', get_theme_file_uri( $css ), array( 'lfar-base' ), lfar_ver( $css ) );
 		// Front end only: the paragraph wrapped around stand-alone links/buttons steps out of the layout,
@@ -136,6 +149,7 @@ add_action(
 		wp_enqueue_script( 'lfar-page', get_theme_file_uri( $js ), array(), lfar_ver( $js ), array( 'in_footer' => true ) );
 		wp_enqueue_style( 'lfar-forms', get_theme_file_uri( 'assets/css/forms.css' ), array( 'lfar-page' ), lfar_ver( 'assets/css/forms.css' ) );
 		wp_enqueue_script( 'lfar-forms', get_theme_file_uri( 'assets/js/forms.js' ), array( 'lfar-page' ), lfar_ver( 'assets/js/forms.js' ), array( 'in_footer' => true ) );
+		wp_enqueue_style( 'lfar-scale', get_theme_file_uri( 'assets/css/scale.css' ), array( 'lfar-forms' ), lfar_ver( 'assets/css/scale.css' ) );
 		// Adopt: Petfinder's pet list widget (the <pet-scroller> element in the "See all adoptable animals" panel).
 		if ( 'adopt' === $key ) {
 			wp_enqueue_script( 'petfinder-pet-scroller', 'https://www.petfinder.com/pet-scroller.bundle.js', array(), null, array( 'in_footer' => true ) );
@@ -175,7 +189,8 @@ add_action(
 	function () {
 		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$key     = $post_id ? lfar_page_key( $post_id ) : '';
-		add_editor_style( array( 'assets/css/base.css', 'assets/css/' . ( $key ? $key : 'home' ) . '.css', 'assets/css/editor.css' ) );
+		$asset = $post_id ? lfar_asset_key( $key ) : 'home';
+		add_editor_style( array( 'assets/css/base.css', 'assets/css/' . $asset . '.css', 'assets/css/editor.css' ) );
 	}
 );
 
@@ -195,44 +210,62 @@ add_action(
 );
 
 /**
- * One-time setup: create the six pages, make Home the front page, add the News and Happy Tails categories.
+ * One-time setup: create the pages, make Home the front page, add the News and Happy Tails categories.
  *
  * New pages hold a reference to their theme pattern, so they render straight from patterns/page-*.php
  * until someone edits them in the block editor (then the blocks are saved into the page).
- * Re-run by deleting the lfar_seeded option (wp option delete lfar_seeded).
+ * Resources is created as a draft so it stays unpublished until the lists are ready.
+ * Re-run by deleting the lfar_setup_version option (wp option delete lfar_setup_version).
  */
+function lfar_ensure_page( $slug, $title, $status = 'publish' ) {
+	$found = get_posts(
+		array(
+			'name'           => $slug,
+			'post_type'      => 'page',
+			'post_status'    => array( 'publish', 'draft', 'private', 'pending' ),
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+		)
+	);
+	if ( $found ) {
+		return (int) $found[0];
+	}
+	$inserted = wp_insert_post(
+		array(
+			'post_type'    => 'page',
+			'post_status'  => $status,
+			'post_title'   => $title,
+			'post_name'    => $slug,
+			'post_content' => '<!-- wp:pattern {"slug":"lfar/page-' . $slug . '"} /-->',
+		)
+	);
+	return is_wp_error( $inserted ) ? 0 : (int) $inserted;
+}
+
 add_action(
-	'admin_init',
+	'init',
 	function () {
-		if ( get_option( 'lfar_seeded' ) || ! current_user_can( 'manage_options' ) ) {
+		if ( (int) get_option( 'lfar_setup_version' ) >= 2 || wp_installing() ) {
 			return;
 		}
 		$titles = array(
-			'home'         => 'Home',
-			'about'        => 'About',
-			'adopt'        => 'Adopt',
-			'get-involved' => 'Get Involved',
-			'contact'      => 'Contact',
-			'donate'       => 'Donate',
+			'home'         => array( 'Home', 'publish' ),
+			'about'        => array( 'About', 'publish' ),
+			'adopt'        => array( 'Adopt', 'publish' ),
+			'get-involved' => array( 'Get Involved', 'publish' ),
+			'contact'      => array( 'Contact', 'publish' ),
+			'donate'       => array( 'Donate', 'publish' ),
+			'events'       => array( 'Events', 'publish' ),
+			'resources'    => array( 'Resources', 'draft' ),
 		);
 		$ids    = array();
-		foreach ( $titles as $slug => $title ) {
-			$existing = get_page_by_path( $slug );
-			if ( $existing ) {
-				$ids[ $slug ] = $existing->ID;
-				continue;
-			}
-			$ids[ $slug ] = wp_insert_post(
-				array(
-					'post_type'    => 'page',
-					'post_status'  => 'publish',
-					'post_title'   => $title,
-					'post_name'    => $slug,
-					'post_content' => '<!-- wp:pattern {"slug":"lfar/page-' . $slug . '"} /-->',
-				)
-			);
+		foreach ( $titles as $slug => $spec ) {
+			$ids[ $slug ] = lfar_ensure_page( $slug, $spec[0], $spec[1] );
 		}
-		if ( ! empty( $ids['home'] ) && ! is_wp_error( $ids['home'] ) ) {
+		if ( empty( $ids['home'] ) || empty( $ids['events'] ) || empty( $ids['resources'] ) ) {
+			return;
+		}
+		if ( ! empty( $ids['home'] ) ) {
 			update_option( 'show_on_front', 'page' );
 			update_option( 'page_on_front', (int) $ids['home'] );
 		}
@@ -242,5 +275,20 @@ add_action(
 			}
 		}
 		update_option( 'lfar_seeded', 1 );
+		update_option( 'lfar_setup_version', 2 );
+	},
+	20
+);
+
+/** Sticky "Adopt now" on every page, linking straight at the adoption application. */
+add_action(
+	'wp_footer',
+	function () {
+		if ( is_admin() ) {
+			return;
+		}
+		echo '<a class="adopt-now" href="' . esc_url( home_url( '/adopt/#apply' ) ) . '">Adopt now</a>';
+		// Hide it only while the application itself is on screen.
+		echo '<script>(function(){var b=document.querySelector(".adopt-now"),t=document.getElementById("apply");if(!b||!t||!("IntersectionObserver"in window))return;new IntersectionObserver(function(es){b.hidden=es.some(function(e){return e.isIntersecting;});},{threshold:.2}).observe(t);})();</script>';
 	}
 );

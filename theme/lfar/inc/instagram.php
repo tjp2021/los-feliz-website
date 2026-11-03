@@ -4,7 +4,9 @@
  *
  * Reads LFAR's own Instagram posts through the Instagram API with Facebook login (Graph API),
  * once an hour, and shows them on four pages:
- *   Home          "News and Upcoming Events" cards, and the featured Happy Tale (newest Adopt story)
+ *   Home          three columns — next #event, latest #update, latest urgent need —
+ *                 plus the featured Happy Tale (newest Adopt story)
+ *   Events        upcoming #event posts, then a past-events archive
  *   About         "In the News & Around the Rescue"  (the #feed-grid cards)
  *   Get Involved  "Volunteers in Action"              (the #feed-grid cards)
  *   Adopt         "Happy Endings and Counting"        (the Happy Tales list)
@@ -42,15 +44,14 @@ const LFAR_IG_DL_LIMIT = 25;                  // Images downloaded per update (t
 function lfar_ig_default_settings() {
 	return array(
 		'account_id'  => LFAR_IG_DEFAULT,
-		'urgent_tags' => 'fosterneeded fostersneeded fosterneededasap volunteersneeded volunteerneeded urgent',
+		'urgent_tags' => 'urgentneed urgent fosterneeded fostersneeded fosterneededasap volunteersneeded volunteerneeded',
 		'urgent_days' => 7,
+		'columns'     => array(
+			'event'  => 'event events',
+			'update' => 'update updates',
+			'urgent' => 'urgentneed urgent fosterneeded fostersneeded fosterneededasap volunteersneeded volunteerneeded',
+		),
 		'sections'    => array(
-			'home'         => array(
-				'site'     => 'fosterneeded fostersneeded volunteersneeded event',
-				'fallback' => '*',
-				'phrases'  => 0,
-				'max'      => 3,
-			),
 			'about'        => array(
 				'site'     => 'inthenews allstar mission volunteer',
 				'fallback' => '*',
@@ -76,7 +77,6 @@ function lfar_ig_default_settings() {
 /** Section labels for the settings screen. */
 function lfar_ig_section_labels() {
 	return array(
-		'home'         => 'Home page: News and Upcoming Events<br><small style="font-weight:400">(Home\'s featured story is the newest Happy Tale)</small>',
 		'about'        => 'About page: In the News &amp; Around the Rescue',
 		'get-involved' => 'Get Involved page: Volunteers in Action',
 		'adopt'        => 'Adopt page: Happy Tales',
@@ -88,6 +88,8 @@ function lfar_ig_settings() {
 	$s = get_option( 'lfar_ig_settings', array() );
 	$s = is_array( $s ) ? $s : array();
 	$out = array_merge( $d, array_intersect_key( $s, $d ) );
+	$saved_columns = isset( $s['columns'] ) && is_array( $s['columns'] ) ? $s['columns'] : array();
+	$out['columns'] = array_merge( $d['columns'], array_intersect_key( $saved_columns, $d['columns'] ) );
 	foreach ( $d['sections'] as $k => $sec ) {
 		$saved                 = isset( $s['sections'][ $k ] ) && is_array( $s['sections'][ $k ] ) ? $s['sections'][ $k ] : array();
 		$out['sections'][ $k ] = array_merge( $sec, array_intersect_key( $saved, $sec ) );
@@ -524,6 +526,8 @@ add_action(
 	}
 );
 
+require_once __DIR__ . '/columns.php';
+
 /* -------------------------------------------------------------------------
  * Front end: swap the mockup samples for live posts
  * ---------------------------------------------------------------------- */
@@ -610,29 +614,32 @@ add_filter(
 			return $html;
 		}
 		$page = lfar_page_key();
-		if ( ! in_array( $page, array( 'home', 'about', 'get-involved', 'adopt' ), true ) ) {
+		if ( ! in_array( $page, array( 'home', 'about', 'get-involved', 'adopt', 'events' ), true ) ) {
 			return $html;
 		}
 		$name  = isset( $block['blockName'] ) ? $block['blockName'] : '';
 		$class = isset( $block['attrs']['className'] ) ? ' ' . $block['attrs']['className'] . ' ' : '';
 		static $cache = array();
-		foreach ( 'home' === $page ? array( 'home', 'adopt' ) : array( $page ) as $sec ) {
+		if ( 'events' === $page ) {
+			if ( 'core/html' === $name && false !== strpos( $html, 'events-upcoming' ) ) {
+				return lfar_ig_events_grid_html( false );
+			}
+			if ( 'core/html' === $name && false !== strpos( $html, 'events-past' ) ) {
+				return lfar_ig_events_grid_html( true );
+			}
+			return $html;
+		}
+		$secs = 'home' === $page ? array( 'adopt' ) : array( $page );
+		foreach ( $secs as $sec ) {
 			if ( ! isset( $cache[ $sec ] ) ) {
 				$cache[ $sec ] = lfar_ig_section_posts( $sec );
 			}
 		}
-		$posts = $cache[ $page ];
 
 		if ( 'home' === $page ) {
-			// News and Upcoming Events.
+			// Event, update, and urgent-need columns. The event column stays until that event is over.
 			if ( 'core/group' === $name && false !== strpos( $class, ' news-grid ' ) ) {
-				if ( ! $posts ) {
-					return $html;
-				}
-				return '<div class="wp-block-group news-grid">' . "\n" . implode( '', array_map( 'lfar_ig_home_card', $posts ) ) . '</div>';
-			}
-			if ( 'core/paragraph' === $name && false !== strpos( $html, '>See all events<' ) ) {
-				return '<p class="lfar-a"><a class="btn" href="' . esc_url( lfar_ig_profile_url() ) . '" target="_blank" rel="noopener">See more on Instagram</a></p>';
+				return lfar_ig_home_columns_html();
 			}
 			// Featured Happy Tale.
 			if ( 'core/group' === $name && false !== strpos( $class, ' row ' ) && false !== strpos( $html, 'Read more Happy Tales' ) && $cache['adopt'] ) {
@@ -640,6 +647,8 @@ add_filter(
 			}
 			return $html;
 		}
+
+		$posts = $cache[ $page ];
 
 		// About / Get Involved: the card grid.
 		if ( 'core/group' === $name && false !== strpos( $class, ' news-grid ' ) && false !== strpos( $html, 'id="feed-grid"' ) ) {
@@ -750,8 +759,16 @@ add_action(
 			$settings['sections'][ $k ]['phrases']  = empty( $s['phrases'] ) ? 0 : 1;
 			$settings['sections'][ $k ]['max']      = max( 1, min( 30, isset( $s['max'] ) ? (int) $s['max'] : $d['sections'][ $k ]['max'] ) );
 		}
+		if ( isset( $in['columns'] ) && is_array( $in['columns'] ) ) {
+			foreach ( array_keys( $d['columns'] ) as $col ) {
+				if ( isset( $in['columns'][ $col ] ) ) {
+					$settings['columns'][ $col ] = implode( ' ', lfar_ig_tag_list( $in['columns'][ $col ] ) );
+				}
+			}
+		}
 		if ( ! empty( $in['reset_sections'] ) ) {
 			$settings['sections']    = $d['sections'];
+			$settings['columns']     = $d['columns'];
 			$settings['urgent_tags'] = $d['urgent_tags'];
 			$settings['urgent_days'] = $d['urgent_days'];
 		}
@@ -810,8 +827,28 @@ function lfar_ig_admin_page() {
 	$where = array();
 	foreach ( array_keys( $settings['sections'] ) as $k ) {
 		foreach ( lfar_ig_section_posts( $k ) as $p ) {
-			$where[ $p['id'] ][] = array( 'home' => 'Home', 'about' => 'About', 'get-involved' => 'Get Involved', 'adopt' => 'Happy Tales' )[ $k ];
+			$where[ $p['id'] ][] = array( 'about' => 'About', 'get-involved' => 'Get Involved', 'adopt' => 'Happy Tales' )[ $k ];
 		}
+	}
+	$col_labels = array(
+		'event'  => 'Home · Event',
+		'update' => 'Home · Update',
+		'urgent' => 'Home · Urgent need',
+	);
+	foreach ( lfar_ig_home_columns() as $key => $p ) {
+		if ( $p ) {
+			$where[ $p['id'] ][] = $col_labels[ $key ];
+		}
+	}
+	$split = lfar_ig_split_events();
+	foreach ( $split['upcoming'] as $p ) {
+		$where[ $p['id'] ][] = 'Events · upcoming';
+	}
+	foreach ( $split['past'] as $p ) {
+		$where[ $p['id'] ][] = 'Events · past';
+	}
+	foreach ( $where as $id => $labels ) {
+		$where[ $id ] = array_values( array_unique( $labels ) );
 	}
 	$dir = lfar_ig_upload_dir();
 	?>
@@ -825,8 +862,11 @@ function lfar_ig_admin_page() {
 			<div class="notice notice-success"><p>Saved.</p></div>
 		<?php endif; ?>
 
-		<p>The site reads LFAR's own Instagram posts every hour and shows them on the About, Get Involved and Adopt pages.
-		Nothing is ever posted to Instagram from here.</p>
+		<p>The site reads LFAR's own Instagram posts every hour. The homepage keeps three columns
+		(next <code>#event</code>, latest <code>#update</code>, latest urgent need). The Events page lists every
+		<code>#event</code> post: upcoming ones first, then a past archive. A caption date such as
+		"November 21, 2026" decides when an event is over. A post with no date stays up until a newer
+		<code>#event</code> post replaces it. Nothing is ever posted to Instagram from here.</p>
 
 		<h2>Status</h2>
 		<p>
@@ -875,6 +915,27 @@ function lfar_ig_admin_page() {
 					<th scope="row"><label for="lfar-ig-acct">Instagram account ID</label></th>
 					<td><input type="text" id="lfar-ig-acct" name="account_id" value="<?php echo esc_attr( $settings['account_id'] ); ?>" class="regular-text">
 					<p class="description">LFAR's Instagram business account. Leave as is.</p></td>
+				</tr>
+			</table>
+
+			<h2>Homepage columns</h2>
+			<p>One post per column, chosen from the hashtags in the caption. Tags are written without <code>#</code>.
+			The Event column is reserved: it keeps the next event until that event's date has passed
+			(or, if the caption has no date, until the next <code>#event</code> post).
+			Urgent-need posts drop off after the number of days under Calls for help.</p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="lfar-col-event">Event column</label></th>
+					<td><input type="text" id="lfar-col-event" class="large-text" name="columns[event]" value="<?php echo esc_attr( $settings['columns']['event'] ); ?>"></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="lfar-col-update">Update column</label></th>
+					<td><input type="text" id="lfar-col-update" class="large-text" name="columns[update]" value="<?php echo esc_attr( $settings['columns']['update'] ); ?>"></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="lfar-col-urgent">Urgent need column</label></th>
+					<td><input type="text" id="lfar-col-urgent" class="large-text" name="columns[urgent]" value="<?php echo esc_attr( $settings['columns']['urgent'] ); ?>">
+					<p class="description">Same idea as Calls for help below. <code>#urgentneed</code> is the tag Melody asked for.</p></td>
 				</tr>
 			</table>
 

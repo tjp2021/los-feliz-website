@@ -12,9 +12,9 @@ development happens on a local WordPress site made with [Local](https://localwp.
 
 ## What the site does
 
-Six main pages (Home, About, Adopt, Get Involved, Contact, Donate), each built from a theme pattern
+Public pages are Home, Adopt, Get Involved, Events, About, Contact, and Donate. Resources is created as a draft until its lists are ready. Each page is built from a theme pattern
 (`theme/lfar/patterns/page-*.php`) with its own stylesheet and script (`assets/css/<page>.css`,
-`assets/js/<page>.js`).
+`assets/js/<page>.js`). Events and Resources reuse the Home stylesheet.
 
 | Feature | Where it comes from | Where it's edited |
 | --- | --- | --- |
@@ -22,7 +22,7 @@ Six main pages (Home, About, Adopt, Get Involved, Contact, Donate), each built f
 | Forms: adoption, foster, volunteer, contact, newsletter | Fluent Forms, placed with `[lfar_form name="…"]` | Fluent Forms → All Forms |
 | Featured pet (Adopt) | The **Featured pet** block, filled from LFAR's Petfinder listings | Adopt page: click the card → **Choose pet** |
 | Full list of adoptable animals (Adopt) | Petfinder's pet list widget (`<pet-scroller>`, org CA3083) | On Petfinder |
-| News, events, Happy Tales | LFAR's Instagram, read hourly (`inc/instagram.php`) | Settings → LFAR Instagram |
+| News, events, Happy Tales | LFAR's Instagram, read hourly (`inc/instagram.php`). Homepage columns use caption hashtags: `#event` (stays until the date in the caption, or until the next `#event` post if there is no date), `#update`, and `#urgentneed`. The Events page archives upcoming and past `#event` posts. | Settings → LFAR Instagram |
 | Donation form (Home, Donate) | LFAR's Donorbox form, embedded | In Donorbox |
 
 A few things worth knowing before you edit:
@@ -90,8 +90,8 @@ recreate the forms and the Instagram connection yourself.
 1. In Local, create a new site (**+** → *Create a new site*) on WordPress 7.1 and note the admin login.
 2. Link the theme as in step 3 of Option A, then activate **LFAR** under Appearance → Themes.
 3. Open the dashboard once as an admin. The theme creates the six pages, makes Home the front page and
-   adds the *News* and *Happy Tails* categories (one time only; to run it again:
-   `wp option delete lfar_seeded`).
+   adds the *News* and *Happy Tails* categories, and creates Events (published) and Resources (draft).
+   To run it again: `wp option delete lfar_setup_version`.
 4. Install and activate **Fluent Forms** (Plugins → Add New). Then add the five forms with the exact
    titles listed above: either import them (ask the owner for a Fluent Forms → Tools → **Export Forms**
    file and use **Import Forms**), or build them by hand. Until a form exists, editors see

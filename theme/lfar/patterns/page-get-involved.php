@@ -56,13 +56,33 @@
 <!-- wp:html -->
 <nav aria-label="On this page" class="jumpbar">
 <ul>
+<li><a href="#foster">Foster</a></li>
 <li><a href="#stories">Volunteer Stories</a></li>
 <li><a href="#signup">Sign Up</a></li>
 <li><a href="#give">Give</a></li>
-<li><a href="#more-ways">Other Ways to Give</a></li>
 </ul>
 </nav>
 <!-- /wp:html -->
+
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw bg-light section2"} -->
+<section class="wp-block-group fw bg-light section2" id="foster"><!-- wp:group {"className":"container"} -->
+<div class="wp-block-group container"><!-- wp:group {"className":"section-heading"} -->
+<div class="wp-block-group section-heading"><!-- wp:heading -->
+<h2 class="wp-block-heading">Become a foster</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph {"className":"subhead"} -->
+<p class="subhead">Give an animal a place to stay while they wait for a family. We pay for vet care, there are no upfront costs, and it can be a weekend or longer.</p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group -->
+
+<!-- wp:group {"className":"app lfar-app"} -->
+<div class="wp-block-group app lfar-app"><!-- wp:shortcode -->
+[lfar_form name="foster"]
+<!-- /wp:shortcode --></div>
+<!-- /wp:group --></div>
+<!-- /wp:group --></section>
+<!-- /wp:group -->
 
 <!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2"} -->
 <section class="wp-block-group fw section2" id="stories"><!-- wp:html -->
@@ -233,11 +253,11 @@
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
-<p>Fostering has its own sign-up on the Adopt page, with everything we cover and how long it lasts.</p>
+<p>The foster application is on this page.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph {"className":"lfar-a"} -->
-<p class="lfar-a"><a class="more" href="/adopt/#foster">Go to fostering <i>→</i></a></p>
+<p class="lfar-a"><a class="more" href="#foster">Foster application <i>→</i></a></p>
 <!-- /wp:paragraph --></div>
 <!-- /wp:group --></div>
 <!-- /wp:group -->
@@ -309,8 +329,8 @@
 <div aria-hidden="true" class="triangle-wrap on-light"><svg class="triangle" preserveaspectratio="none" viewbox="0 0 100 102"><path d="M0 0 L50 100 L100 0 Z"></path></svg></div>
 <!-- /wp:html -->
 
-<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw bg-light section2 tight-top"} -->
-<section class="wp-block-group fw bg-light section2 tight-top" id="more-ways"><!-- wp:html -->
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw bg-light section2 tight-top lfar-later"} -->
+<section class="wp-block-group fw bg-light section2 tight-top lfar-later" id="more-ways"><!-- wp:html -->
 <div aria-hidden="true" class="watermark r"></div>
 <!-- /wp:html -->
 

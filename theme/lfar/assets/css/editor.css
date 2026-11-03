@@ -18,3 +18,20 @@
 .map-hero > .map-frame.wp-block { position: absolute !important; margin: 0; }
 .map-frame > figure.hero-bg.wp-block { position: absolute !important; inset: 0; margin: 0; }
 .about-map-hero .places li { opacity: 1 !important; animation: none !important; transform: translate(-50%,-50%) !important; }
+
+/* Sections held off the public site stay visible here so they can be finished later. */
+.lfar-later { display: block !important; outline: 2px dashed #c9a227; outline-offset: 8px; }
+.lfar-later::before {
+	content: "Hidden on the public site until this section is ready";
+	display: block;
+	margin: 0 auto 12px;
+	max-width: 1170px;
+	padding: 8px 16px;
+	font-family: var(--wp--preset--font-family--heading);
+	font-weight: 700;
+	font-size: 13px;
+	letter-spacing: .4px;
+	text-transform: uppercase;
+	color: #675444;
+	background: #fff6d8;
+}

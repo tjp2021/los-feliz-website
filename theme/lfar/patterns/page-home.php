@@ -69,14 +69,14 @@
 <!-- wp:group {"className":"container"} -->
 <div class="wp-block-group container"><!-- wp:group {"className":"section-heading"} -->
 <div class="wp-block-group section-heading"><!-- wp:heading -->
-<h2 class="wp-block-heading">News and Upcoming Events</h2>
+<h2 class="wp-block-heading">Events, updates, and urgent needs</h2>
 <!-- /wp:heading --></div>
 <!-- /wp:group -->
 
 <!-- wp:group {"className":"news-grid"} -->
-<div class="wp-block-group news-grid"><!-- wp:group {"tagName":"article","className":"news-card lfar-anim-fade-up"} -->
-<article class="wp-block-group news-card lfar-anim-fade-up"><!-- wp:html -->
-<a class="thumb" href="#">
+<div class="wp-block-group news-grid"><!-- wp:group {"tagName":"article","className":"news-card is-pinned lfar-anim-fade-up"} -->
+<article class="wp-block-group news-card is-pinned lfar-anim-fade-up"><!-- wp:html -->
+<a class="thumb" href="/events/#upcoming">
 <span class="tag">Event</span>
 <img alt="A volunteer holding a small tan dog" src="<?php echo esc_url( get_theme_file_uri( 'assets/images/a-volunteer-holding-a-small-tan-dog.jpg' ) ); ?>"/>
 <span class="overlay-mask">Event details</span>
@@ -86,10 +86,14 @@
 <!-- wp:group {"className":"news-body"} -->
 <div class="wp-block-group news-body"><!-- wp:html -->
 <div class="meta">
-<span><svg viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>Saturday, October 3, 2026 · 11 am – 2 pm</span>
+<span><svg viewbox="0 0 24 24"><rect height="16" rx="2" width="18" x="3" y="5"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>Saturday, November 21, 2026 · 11 am – 2 pm</span>
 <span><svg viewbox="0 0 24 24"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>Petco, Los Feliz [store address]</span>
 </div>
 <!-- /wp:html -->
+
+<!-- wp:paragraph {"className":"col-kicker"} -->
+<p class="col-kicker">Next event</p>
+<!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":4} -->
 <h4 class="wp-block-heading">Adoption Meet &amp; Greet at Petco</h4>
@@ -100,44 +104,14 @@
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph {"className":"lfar-a"} -->
-<p class="lfar-a"><a class="more" href="#">Event details <i>→</i></a></p>
+<p class="lfar-a"><a class="more" href="/events/#upcoming">Event details <i>→</i></a></p>
 <!-- /wp:paragraph --></div>
 <!-- /wp:group --></article>
 <!-- /wp:group -->
 
 <!-- wp:group {"tagName":"article","className":"news-card lfar-anim-fade-up"} -->
 <article class="wp-block-group news-card lfar-anim-fade-up"><!-- wp:html -->
-<a class="thumb" href="/adopt/#apply-foster">
-<span class="tag urgent">Urgent need</span>
-<img alt="Five puppies looking out of a crate" src="<?php echo esc_url( get_theme_file_uri( 'assets/images/five-puppies-looking-out-of-a-crate.jpg' ) ); ?>"/>
-<span class="overlay-mask">How to help</span>
-</a>
-<!-- /wp:html -->
-
-<!-- wp:group {"className":"news-body"} -->
-<div class="wp-block-group news-body"><!-- wp:html -->
-<div class="meta">
-<span><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Posted September 14, 2026</span>
-</div>
-<!-- /wp:html -->
-
-<!-- wp:heading {"level":4} -->
-<h4 class="wp-block-heading">Five puppies need foster homes this week</h4>
-<!-- /wp:heading -->
-
-<!-- wp:paragraph -->
-<p>A litter of five 8-week-old puppies came in over the weekend. Can you open your home for two to three weeks while they get ready for adoption?</p>
-<!-- /wp:paragraph -->
-
-<!-- wp:paragraph {"className":"lfar-a"} -->
-<p class="lfar-a"><a class="more" href="/adopt/#apply-foster">How to help <i>→</i></a></p>
-<!-- /wp:paragraph --></div>
-<!-- /wp:group --></article>
-<!-- /wp:group -->
-
-<!-- wp:group {"tagName":"article","className":"news-card lfar-anim-fade-up"} -->
-<article class="wp-block-group news-card lfar-anim-fade-up"><!-- wp:html -->
-<a class="thumb" href="#">
+<a class="thumb" href="#news">
 <span class="tag update">Update</span>
 <img alt="Three volunteers sitting with a dog" src="<?php echo esc_url( get_theme_file_uri( 'assets/images/three-volunteers-sitting-with-a-dog.jpg' ) ); ?>"/>
 <span class="overlay-mask">See the photos</span>
@@ -151,6 +125,10 @@
 </div>
 <!-- /wp:html -->
 
+<!-- wp:paragraph {"className":"col-kicker"} -->
+<p class="col-kicker">Latest update</p>
+<!-- /wp:paragraph -->
+
 <!-- wp:heading {"level":4} -->
 <h4 class="wp-block-heading">Pictures from Volunteer Orientation 9/12/26</h4>
 <!-- /wp:heading -->
@@ -160,7 +138,41 @@
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph {"className":"lfar-a"} -->
-<p class="lfar-a"><a class="more" href="#">See the photos <i>→</i></a></p>
+<p class="lfar-a"><a class="more" href="#news">See the photos <i>→</i></a></p>
+<!-- /wp:paragraph --></div>
+<!-- /wp:group --></article>
+<!-- /wp:group -->
+
+<!-- wp:group {"tagName":"article","className":"news-card lfar-anim-fade-up"} -->
+<article class="wp-block-group news-card lfar-anim-fade-up"><!-- wp:html -->
+<a class="thumb" href="/get-involved/#foster">
+<span class="tag urgent">Urgent need</span>
+<img alt="Five puppies looking out of a crate" src="<?php echo esc_url( get_theme_file_uri( 'assets/images/five-puppies-looking-out-of-a-crate.jpg' ) ); ?>"/>
+<span class="overlay-mask">How to help</span>
+</a>
+<!-- /wp:html -->
+
+<!-- wp:group {"className":"news-body"} -->
+<div class="wp-block-group news-body"><!-- wp:html -->
+<div class="meta">
+<span><svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Posted September 14, 2026</span>
+</div>
+<!-- /wp:html -->
+
+<!-- wp:paragraph {"className":"col-kicker"} -->
+<p class="col-kicker">Urgent need</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading {"level":4} -->
+<h4 class="wp-block-heading">Five puppies need foster homes this week</h4>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>A litter of five 8-week-old puppies came in over the weekend. Can you open your home for two to three weeks while they get ready for adoption?</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:paragraph {"className":"lfar-a"} -->
+<p class="lfar-a"><a class="more" href="/get-involved/#foster">How to help <i>→</i></a></p>
 <!-- /wp:paragraph --></div>
 <!-- /wp:group --></article>
 <!-- /wp:group --></div>
@@ -168,7 +180,7 @@
 
 <!-- wp:group {"className":"news-cta"} -->
 <div class="wp-block-group news-cta"><!-- wp:paragraph {"className":"lfar-a"} -->
-<p class="lfar-a"><a class="btn" href="#">See all events</a></p>
+<p class="lfar-a"><a class="btn" href="/events/">See all events</a></p>
 <!-- /wp:paragraph --></div>
 <!-- /wp:group --></div>
 <!-- /wp:group --></section>

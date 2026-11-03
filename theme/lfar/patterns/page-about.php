@@ -333,8 +333,8 @@
 <!-- /wp:group --></section>
 <!-- /wp:group -->
 
-<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2"} -->
-<section class="wp-block-group fw section2" id="programs"><!-- wp:group {"className":"container"} -->
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2 lfar-later"} -->
+<section class="wp-block-group fw section2 lfar-later" id="programs"><!-- wp:group {"className":"container"} -->
 <div class="wp-block-group container"><!-- wp:group {"className":"section-heading"} -->
 <div class="wp-block-group section-heading"><!-- wp:heading -->
 <h2 class="wp-block-heading">Our Programs</h2>
@@ -579,8 +579,8 @@
 <!-- /wp:group --></section>
 <!-- /wp:group -->
 
-<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw bg-light section2"} -->
-<section class="wp-block-group fw bg-light section2" id="money"><!-- wp:group {"className":"container"} -->
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw bg-light section2 lfar-later"} -->
+<section class="wp-block-group fw bg-light section2 lfar-later" id="money"><!-- wp:group {"className":"container"} -->
 <div class="wp-block-group container"><!-- wp:group {"className":"section-heading"} -->
 <div class="wp-block-group section-heading"><!-- wp:heading -->
 <h2 class="wp-block-heading">Where the Money Goes</h2>
@@ -621,8 +621,8 @@
 <!-- /wp:group --></section>
 <!-- /wp:group -->
 
-<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2"} -->
-<section class="wp-block-group fw section2" id="partners"><!-- wp:html -->
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2 lfar-later"} -->
+<section class="wp-block-group fw section2 lfar-later" id="partners"><!-- wp:html -->
 <div aria-hidden="true" class="watermark r"></div>
 <!-- /wp:html -->
 
@@ -855,8 +855,8 @@
 <!-- /wp:group --></section>
 <!-- /wp:group -->
 
-<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2"} -->
-<section class="wp-block-group fw section2" id="next"><!-- wp:group {"className":"container"} -->
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw section2 lfar-later"} -->
+<section class="wp-block-group fw section2 lfar-later" id="next"><!-- wp:group {"className":"container"} -->
 <div class="wp-block-group container"><!-- wp:group {"className":"section-heading"} -->
 <div class="wp-block-group section-heading"><!-- wp:heading -->
 <h2 class="wp-block-heading">What's Next</h2>
@@ -919,8 +919,8 @@
 <!-- /wp:group --></section>
 <!-- /wp:group -->
 
-<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw funders section2"} -->
-<section class="wp-block-group fw funders section2" id="funders"><!-- wp:group {"className":"container"} -->
+<!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"fw funders section2 lfar-later"} -->
+<section class="wp-block-group fw funders section2 lfar-later" id="funders"><!-- wp:group {"className":"container"} -->
 <div class="wp-block-group container"><!-- wp:group {"className":"section-heading"} -->
 <div class="wp-block-group section-heading"><!-- wp:heading -->
 <h2 class="wp-block-heading">Transparency &amp; Documents</h2>
@@ -1229,7 +1229,7 @@
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph {"className":"lfar-a"} -->
-<p class="lfar-a"><a class="btn btn-light" href="/adopt/#foster">Foster</a></p>
+<p class="lfar-a"><a class="btn btn-light" href="/get-involved/#foster">Foster</a></p>
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph {"className":"lfar-a"} -->

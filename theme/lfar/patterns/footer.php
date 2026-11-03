@@ -56,6 +56,10 @@
 <!-- /wp:list-item -->
 
 <!-- wp:list-item -->
+<li><a href="/events/">Events</a></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><a href="/contact/">Contact</a></li>
 <!-- /wp:list-item -->
 

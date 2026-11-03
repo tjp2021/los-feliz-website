@@ -50,6 +50,10 @@
 <!-- /wp:list-item -->
 
 <!-- wp:list-item -->
+<li><a href="/events/">Events</a></li>
+<!-- /wp:list-item -->
+
+<!-- wp:list-item -->
 <li><a href="/about/">About</a></li>
 <!-- /wp:list-item -->
 
