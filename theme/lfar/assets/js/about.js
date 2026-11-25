@@ -93,3 +93,34 @@
   }
   (function wait(){if(hero.classList.contains('go'))start();else setTimeout(wait,100);})();
 })();
+
+/* Give every team card the height of the tallest one, including after a resize. */
+(function () {
+	var boards = [].slice.call(document.querySelectorAll('.board'));
+	if (!boards.length) return;
+	function cardsIn(board) {
+		return [].slice.call(board.children).filter(function (el) {
+			return el.classList && el.classList.contains('person');
+		});
+	}
+	function equalize() {
+		boards.forEach(function (board) {
+			var cards = cardsIn(board);
+			if (cards.length < 2) return;
+			cards.forEach(function (card) { card.style.minHeight = ''; });
+			var max = 0;
+			cards.forEach(function (card) { max = Math.max(max, card.offsetHeight); });
+			var height = Math.ceil(max) + 'px';
+			cards.forEach(function (card) { card.style.minHeight = height; });
+		});
+	}
+	var timer;
+	function schedule() {
+		clearTimeout(timer);
+		timer = setTimeout(equalize, 60);
+	}
+	if (document.fonts && document.fonts.ready) document.fonts.ready.then(equalize);
+	window.addEventListener('load', equalize);
+	window.addEventListener('resize', schedule);
+	equalize();
+})();

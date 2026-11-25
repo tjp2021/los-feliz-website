@@ -34,6 +34,7 @@ function lfar_asset_key( $key ) {
 // Instagram feed on About, Get Involved and Adopt (Settings → LFAR Instagram).
 require_once get_theme_file_path( 'inc/instagram.php' );
 require_once get_theme_file_path( 'inc/public.php' );
+require_once get_theme_file_path( 'inc/qr.php' );
 
 /**
  * Which mockup a page belongs to, or '' if none.
@@ -78,35 +79,52 @@ add_filter(
 );
 
 /**
- * Fluent Forms ID for one of the site's forms, found by its title (so it survives a move to production).
- * Rename a form in Fluent Forms? Update the title here too.
+ * Titles each shortcode key looks up, first match wins.
+ * Rename a form in Fluent Forms? Add the new title at the front of its list.
  *
- * @param string $key adoption | foster | volunteer | contact | newsletter.
+ * @return array<string,string[]>
+ */
+function lfar_form_titles() {
+	return array(
+		// "Adoption form" is the name the dedicated page asks for. The form on the
+		// site today is titled "Adoption application", so that title still matches.
+		'adoption'   => array( 'Adoption form', 'Adoption application' ),
+		'foster'     => array( 'Foster application' ),
+		'volunteer'  => array( 'Volunteer sign-up' ),
+		'contact'    => array( 'Contact' ),
+		'newsletter' => array( 'Newsletter sign-up' ),
+	);
+}
+
+/**
+ * Fluent Forms ID for one of the site's forms, found by its title (so it survives a move to production).
+ *
+ * @param string $key A key from lfar_form_titles(), or an exact form title.
  */
 function lfar_form_id( $key ) {
-	static $ids = null;
-	$titles = array(
-		'adoption'   => 'Adoption application',
-		'foster'     => 'Foster application',
-		'volunteer'  => 'Volunteer sign-up',
-		'contact'    => 'Contact',
-		'newsletter' => 'Newsletter sign-up',
-	);
-	if ( null === $ids ) {
+	static $by_title = null;
+	$key = is_string( $key ) ? $key : '';
+	if ( null === $by_title ) {
 		global $wpdb;
-		$ids   = array();
-		$table = $wpdb->prefix . 'fluentform_forms';
+		$by_title = array();
+		$table    = $wpdb->prefix . 'fluentform_forms';
 		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$rows = $wpdb->get_results( "SELECT id, title FROM {$table} ORDER BY id ASC" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			foreach ( $rows as $row ) {
-				$k = array_search( $row->title, $titles, true );
-				if ( false !== $k && ! isset( $ids[ $k ] ) ) {
-					$ids[ $k ] = (int) $row->id;
+				if ( ! isset( $by_title[ $row->title ] ) ) {
+					$by_title[ $row->title ] = (int) $row->id;
 				}
 			}
 		}
 	}
-	return isset( $ids[ $key ] ) ? $ids[ $key ] : 0;
+	$known  = lfar_form_titles();
+	$wanted = isset( $known[ $key ] ) ? $known[ $key ] : ( '' !== $key ? array( $key ) : array() );
+	foreach ( $wanted as $title ) {
+		if ( isset( $by_title[ $title ] ) ) {
+			return $by_title[ $title ];
+		}
+	}
+	return 0;
 }
 
 /**
@@ -119,7 +137,9 @@ add_shortcode(
 		$atts = shortcode_atts( array( 'name' => '' ), $atts, 'lfar_form' );
 		$id   = lfar_form_id( $atts['name'] );
 		if ( ! $id ) {
-			return current_user_can( 'edit_pages' ) ? '<p class="lfar-form-missing">[Form "' . esc_html( $atts['name'] ) . '" not found in Fluent Forms]</p>' : '';
+			$known = lfar_form_titles();
+			$label = isset( $known[ $atts['name'] ] ) ? implode( '" or "', $known[ $atts['name'] ] ) : $atts['name'];
+			return current_user_can( 'edit_pages' ) ? '<p class="lfar-form-missing">[Form "' . esc_html( $label ) . '" not found in Fluent Forms]</p>' : '';
 		}
 		return do_shortcode( '[fluentform id="' . (int) $id . '"]' );
 	}
@@ -147,6 +167,19 @@ add_action(
 	function () {
 		add_theme_support( 'editor-styles' );
 		add_theme_support( 'wp-block-styles' );
+		// WordPress caches the pattern file list for the life of the theme version.
+		// A new pattern (Adoption form, QR) would stay invisible until that cache
+		// expired, so drop it once when those files change.
+		$theme = wp_get_theme();
+		if ( ! is_callable( array( $theme, 'delete_pattern_cache' ) ) ) {
+			return;
+		}
+		$stamp = lfar_ver( 'patterns/page-adoption-form.php' ) . ':' . lfar_ver( 'patterns/page-qr.php' );
+		if ( get_option( 'lfar_pattern_stamp' ) === $stamp ) {
+			return;
+		}
+		$theme->delete_pattern_cache();
+		update_option( 'lfar_pattern_stamp', $stamp, false );
 	}
 );
 
@@ -185,7 +218,7 @@ add_action(
 add_action(
 	'wp_head',
 	function () {
-		if ( in_array( lfar_page_key(), array( 'about', 'get-involved', 'contact' ), true ) ) {
+		if ( in_array( lfar_page_key(), array( 'about', 'adopt', 'get-involved', 'contact' ), true ) ) {
 			wp_print_inline_script_tag( "document.documentElement.classList.add('js');" );
 		}
 	},
@@ -241,8 +274,10 @@ function lfar_page_defs() {
 		'get-involved' => array( 'Get Involved', 'publish' ),
 		'contact'      => array( 'Contact', 'publish' ),
 		'donate'       => array( 'Donate', 'publish' ),
-		'events'       => array( 'Events', 'publish' ),
-		'resources'    => array( 'Resources', 'draft' ),
+		'events'         => array( 'Events', 'publish' ),
+		'resources'      => array( 'Resources', 'draft' ),
+		'adoption-form'  => array( 'Adoption form', 'publish' ),
+		'qr'             => array( 'QR code', 'publish' ),
 	);
 }
 
@@ -278,13 +313,13 @@ function lfar_ensure_pages() {
 		}
 	}
 	update_option( 'lfar_seeded', 1 );
-	update_option( 'lfar_pages_v', 2 );
+	update_option( 'lfar_pages_v', 3 );
 }
 
 add_action(
 	'init',
 	function () {
-		if ( 2 === (int) get_option( 'lfar_pages_v' ) ) {
+		if ( 3 === (int) get_option( 'lfar_pages_v' ) ) {
 			return;
 		}
 		lfar_ensure_pages();

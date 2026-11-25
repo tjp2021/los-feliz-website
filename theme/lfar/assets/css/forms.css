@@ -138,3 +138,94 @@
 .widget.dbox.is-down .lfar-widget-fallback { margin: 0; }
 .widget.dbox.is-down iframe { display: none; }
 #pf-panel.is-down pet-scroller { display: none; }
+
+/* Adopt: both applications stay closed until Adopt or Foster is chosen.
+   Without JavaScript the forms stay visible. */
+html.js .lfar-page-adopt #apply .lfar-form-adopt,
+html.js .lfar-page-adopt #apply .lfar-form-foster {
+	display: grid;
+	grid-template-rows: 0fr;
+	margin: 0;
+	opacity: 0;
+	visibility: hidden;
+	transition: grid-template-rows .5s cubic-bezier(.22, 1, .36, 1), opacity .4s ease, visibility 0s linear .5s;
+}
+html.js .lfar-page-adopt #apply .lfar-form-adopt > *,
+html.js .lfar-page-adopt #apply .lfar-form-foster > * {
+	min-height: 0;
+	overflow: hidden;
+}
+html.js .lfar-page-adopt #apply .lfar-form.is-open {
+	grid-template-rows: 1fr;
+	margin-top: 8px;
+	opacity: 1;
+	visibility: visible;
+	transition: grid-template-rows .5s cubic-bezier(.22, 1, .36, 1), opacity .4s ease, visibility 0s;
+}
+html.js .lfar-page-adopt #apply .lfar-form.is-open.is-shown > * {
+	overflow: visible;
+}
+html.js .lfar-page-adopt #apply .lfar-form:focus {
+	outline: none;
+}
+@media (prefers-reduced-motion: reduce) {
+	html.js .lfar-page-adopt #apply .lfar-form-adopt,
+	html.js .lfar-page-adopt #apply .lfar-form-foster {
+		transition: none;
+	}
+}
+
+/* Standalone adoption form page. Editable heading and intro, form looked up by title. */
+.lfar-form-page {
+	background: var(--wp--preset--color--light, #F5F5F5);
+	padding-block: var(--lfar-section, 96px);
+}
+.lfar-form-page .container {
+	max-width: var(--lfar-container, 1170px);
+	margin-inline: auto;
+	padding-inline: var(--lfar-gutter, 16px);
+}
+.lfar-form-page .section-heading {
+	text-align: center;
+	margin-bottom: var(--lfar-space-md, 40px);
+}
+.lfar-form-page .eyebrow {
+	display: inline-block;
+	margin: 0 0 12px;
+	font-family: var(--wp--preset--font-family--heading);
+	font-weight: 700;
+	font-size: var(--lfar-eyebrow, 13px);
+	letter-spacing: var(--lfar-track-eyebrow, .08em);
+	text-transform: uppercase;
+	color: var(--wp--preset--color--accent, #B209D7);
+}
+.lfar-form-page h1 {
+	margin: 0 0 12px;
+	font-family: var(--wp--preset--font-family--heading);
+	font-weight: 700;
+	font-size: var(--lfar-h1, 48px);
+	line-height: var(--lfar-lh-heading, 1.2);
+	letter-spacing: var(--lfar-track-heading, -.02em);
+	color: var(--wp--preset--color--head, #675444);
+	text-wrap: balance;
+}
+.lfar-form-page .subhead {
+	max-width: 42ch;
+	margin: 0 auto;
+	font-size: var(--lfar-lead, 20px);
+	line-height: var(--lfar-lh-lead, 1.55);
+	color: var(--wp--preset--color--ink, #6B6B6B);
+}
+.lfar-form-card {
+	max-width: 820px;
+	margin: 0 auto;
+	padding: 40px 40px 34px;
+	background: #fff;
+	border: 1px solid #F0E8F3;
+	border-radius: 14px;
+	box-shadow: 0 24px 60px rgba(40, 0, 55, .16);
+}
+@media (max-width: 767px) {
+	.lfar-form-page h1 { font-size: var(--lfar-h1, 36px); }
+	.lfar-form-card { padding: 28px 18px 24px; }
+}
