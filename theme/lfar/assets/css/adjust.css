@@ -35,9 +35,23 @@
 }
 .adopt-now[hidden] { display: none !important; }
 
-/* The window stays the scroller. This padding is the button height plus its offset,
-   so the copyright line sits above the button and hiding the button does not move the page. */
-body { padding-bottom: 72px; }
+/* The window stays the scroller. Clear the sticky Adopt now button (about 42px tall,
+   18px off the corner) plus a gap, including the phone safe area. The padding stays
+   when the button is hidden so the page does not jump. */
+body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+html { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 991px) {
+	body { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+	html { scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+	/* Phone and tablet: don't cover the Adopt hero, and don't show the shortcut
+	   on the standalone adoption form. JS removes lfar-hero-cover once the hero
+	   has scrolled away, and adds lfar-form-open while an application is open. */
+	html.lfar-hero-cover .lfar-page-adopt .adopt-now,
+	html.lfar-form-open .adopt-now,
+	.lfar-page-adoption-form .adopt-now {
+		display: none !important;
+	}
+}
 
 /* Photo heroes match the About map header Melody liked (about 460–560px), and grow if the card needs it. */
 @media (min-width: 992px) {
@@ -83,7 +97,7 @@ body { padding-bottom: 72px; }
 }
 /* Body copy from 768 up. The 992-only block left tablet at the old 16px. */
 @media (min-width: 768px) {
-	.fw p:not(.header-p):not(.eyebrow):not(.subhead):not(.stories-sub):not(.person-role):not(.pet-facts):not(.fine):not(.src):not(.tales-note):not(.feed-note):not(.step-when):not(.mission-text),
+	.fw p:not(.header-p):not(.eyebrow):not(.subhead):not(.stories-sub):not(.person-role):not(.pet-facts):not(.fine):not(.src):not(.tales-note):not(.tails-note):not(.feed-note):not(.step-when):not(.mission-text),
 	.news-body p,
 	.story-body p,
 	.fact-body p,
@@ -263,6 +277,7 @@ h1,
 .fine,
 .src,
 .tales-note,
+.tails-note,
 .feed-note,
 .nl-note,
 .stat-note,
@@ -454,7 +469,7 @@ h3.pet-name {
 	line-height: 1.2;
 }
 /* Adopt's note uses !important, so the scale has to as well. */
-.tales-note { font-size: var(--lfar-small) !important; }
+:is(.tales-note, .tails-note) { font-size: var(--lfar-small) !important; }
 /* Roles and step kickers are eyebrows. The body rule is specific enough to catch them otherwise. */
 .person p.person-role,
 .step p.step-when {

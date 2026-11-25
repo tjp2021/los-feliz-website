@@ -11,11 +11,34 @@
 
 	var applyBtn = document.querySelector('.adopt-now');
 	var applySec = document.getElementById('apply');
+	var root = document.documentElement;
+	var hideFor = { apply: false, hero: !!root.classList.contains('lfar-hero-cover'), form: false };
+	function syncAdoptNow() {
+		if (!applyBtn) return;
+		var onFormPage = /\/adoption-form\/?$/.test(location.pathname);
+		applyBtn.hidden = onFormPage || hideFor.apply || hideFor.hero || hideFor.form;
+	}
+	window.lfarSyncAdoptNow = function (formOpen) {
+		hideFor.form = !!formOpen;
+		if (formOpen) root.classList.add('lfar-form-open');
+		else root.classList.remove('lfar-form-open');
+		syncAdoptNow();
+	};
 	if (applyBtn && applySec && 'IntersectionObserver' in window) {
 		new IntersectionObserver(function (entries) {
-			applyBtn.hidden = entries[0].isIntersecting;
+			hideFor.apply = entries[0].isIntersecting;
+			syncAdoptNow();
 		}, { threshold: 0.2 }).observe(applySec);
 	}
+	var hero = document.querySelector('.lfar-page-adopt .hero');
+	if (applyBtn && hero && 'IntersectionObserver' in window) {
+		new IntersectionObserver(function (entries) {
+			hideFor.hero = entries[0].isIntersecting;
+			root.classList.toggle('lfar-hero-cover', hideFor.hero);
+			syncAdoptNow();
+		}, { threshold: 0 }).observe(hero);
+	}
+	syncAdoptNow();
 
 	// Adopt page: the form stays closed until Adopt or Foster is chosen.
 	var radios = $$('.lfar-intent input[name="intent"]');
@@ -57,6 +80,7 @@
 					f.setAttribute('inert', '');
 				}
 			});
+			if (window.lfarSyncAdoptNow) window.lfarSyncAdoptNow(!!chosen);
 			if (!moveFocus || !chosen) return;
 			var box = $('.lfar-form-' + chosen);
 			if (!box) return;

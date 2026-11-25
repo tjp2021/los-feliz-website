@@ -33,14 +33,15 @@
   var pfBtn=$('#pf-btn'), pfPanel=$('#pf-panel');
   if(pfBtn&&pfPanel) pfBtn.addEventListener('click',function(){var o=pfPanel.classList.toggle('open');pfBtn.setAttribute('aria-expanded',o);pfBtn.firstChild.nodeValue=o?'Hide the full list ':'See all adoptable animals ';});
 
-  // Happy Tales: each click reveals the next three #happytales posts
-  var talesBtn=$('#tales-btn');
-  if(talesBtn) talesBtn.addEventListener('click',function(){
+  // Happy Tails (live id tails-btn) or the older Happy Tales id.
+  var tailsBtn=$('#tails-btn')||$('#tales-btn');
+  if(tailsBtn) tailsBtn.addEventListener('click',function(){
     var next=$$('#stories .story[hidden]');
+    var tag=tailsBtn.id==='tails-btn'?'#happytails':'#happytales';
     next.slice(0,3).forEach(function(li,i){li.hidden=false;li.style.animationDelay=(i*.15)+'s';li.classList.remove('run','fade-up');void li.offsetWidth;li.classList.add('run','fade-up');});
     if(next.length<=3){
-      var a=document.createElement('a');a.className='btn btn-ghost';a.href='#';a.textContent='See all #happytales on Instagram';
-      talesBtn.replaceWith(a);
+      var a=document.createElement('a');a.className='btn btn-ghost';a.href='#';a.textContent='See all '+tag+' on Instagram';
+      tailsBtn.replaceWith(a);
     }
   });
 

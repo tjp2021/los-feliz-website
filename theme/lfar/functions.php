@@ -74,6 +74,12 @@ add_filter(
 		if ( $key ) {
 			$classes[] = 'lfar-page-' . $key;
 		}
+		if ( is_page() ) {
+			$slug = get_post_field( 'post_name', get_queried_object_id() );
+			if ( in_array( $slug, array( 'adoption-form', 'qr' ), true ) ) {
+				$classes[] = 'lfar-page-' . $slug;
+			}
+		}
 		return $classes;
 	}
 );
@@ -218,8 +224,14 @@ add_action(
 add_action(
 	'wp_head',
 	function () {
-		if ( in_array( lfar_page_key(), array( 'about', 'adopt', 'get-involved', 'contact' ), true ) ) {
-			wp_print_inline_script_tag( "document.documentElement.classList.add('js');" );
+		$key = lfar_page_key();
+		if ( in_array( $key, array( 'about', 'adopt', 'get-involved', 'contact' ), true ) ) {
+			$script = "document.documentElement.classList.add('js');";
+			// Hide the sticky Adopt now button until the hero has scrolled away (phone and tablet).
+			if ( 'adopt' === $key ) {
+				$script .= "document.documentElement.classList.add('lfar-hero-cover');";
+			}
+			wp_print_inline_script_tag( $script );
 		}
 	},
 	1
