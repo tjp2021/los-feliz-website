@@ -227,7 +227,7 @@ add_action(
 		$key = lfar_page_key();
 		if ( in_array( $key, array( 'about', 'adopt', 'get-involved', 'contact' ), true ) ) {
 			$script = "document.documentElement.classList.add('js');";
-			// Hide the sticky Adopt now button until the hero has scrolled away (phone and tablet).
+			// Hide the bottom bar until the Adopt hero has scrolled away (phone and tablet).
 			if ( 'adopt' === $key ) {
 				$script .= "document.documentElement.classList.add('lfar-hero-cover');";
 			}

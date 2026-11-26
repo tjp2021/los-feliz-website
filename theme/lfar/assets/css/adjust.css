@@ -9,7 +9,10 @@
  * Mobile sizes stay as each page stylesheet set them. Melody said stacked mobile text already reads fine.
  */
 
-/* Sticky adoption application. Back-to-top stays on the right. */
+/* Sticky adoption application. From 992px up it stays a corner pill, with
+   back-to-top as its own circle. forms.js puts both in .lfar-action-bar;
+   display:contents keeps the desktop positions on the viewport. */
+.lfar-action-bar { display: contents; }
 .adopt-now {
 	position: fixed;
 	z-index: 75;
@@ -35,20 +38,129 @@
 }
 .adopt-now[hidden] { display: none !important; }
 
-/* The window stays the scroller. Clear the sticky Adopt now button (about 42px tall,
-   18px off the corner) plus a gap, including the phone safe area. The padding stays
-   when the button is hidden so the page does not jump. */
-body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
-html { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+/* Desktop: clear the corner controls. The padding stays while the pill is
+   hidden so the page does not jump. The pill is a little narrower than the
+   base rule so at 1440 it stays in the gutter, left of the 1170px column. */
+@media (min-width: 992px) {
+	.adopt-now { padding: 12px 16px; }
+	body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+	html { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Phone and tablet: one solid bar. Adopt now fills the row; back-to-top is
+   the icon on the right. Bar height and body padding are the same value, so
+   the last line of the footer sits above the bar. Padding stays when the bar
+   hides over the Adopt hero or an open application (no jump). The adoption
+   form page never shows the bar, so it drops the padding. */
 @media (max-width: 991px) {
-	body { padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
-	html { scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
-	/* Phone and tablet: don't cover the Adopt hero, and don't show the shortcut
-	   on the standalone adoption form. JS removes lfar-hero-cover once the hero
-	   has scrolled away, and adds lfar-form-open while an application is open. */
+	/* The bar is as tall as this inset. The page scrolls in the space above
+	   it, so a line of text can reach the bar and cannot slide underneath.
+	   The inset stays while the bar is hidden (hero, open application) so the
+	   page does not jump. The adoption form page has no bar and no inset. */
+	html {
+		height: 100%;
+		overflow: hidden;
+		background: #fff;
+	}
+	body {
+		box-sizing: border-box;
+		height: calc(100% - 64px - env(safe-area-inset-bottom, 0px));
+		max-height: calc(100% - 64px - env(safe-area-inset-bottom, 0px));
+		margin-bottom: 0;
+		overflow: auto;
+		padding-bottom: 0;
+		scroll-padding-bottom: 8px;
+	}
+	html:has(body.lfar-page-adoption-form) {
+		height: auto;
+		overflow: visible;
+	}
+	body.lfar-page-adoption-form {
+		height: auto;
+		max-height: none;
+		overflow: visible;
+		padding-bottom: 0;
+	}
+	body:not(:has(.lfar-action-bar)) .adopt-now,
+	body:not(:has(.lfar-action-bar)) #toTop {
+		visibility: hidden;
+	}
+	.lfar-action-bar {
+		display: flex;
+		position: fixed;
+		z-index: 80;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		align-items: center;
+		gap: 8px;
+		box-sizing: border-box;
+		height: calc(64px + env(safe-area-inset-bottom, 0px));
+		padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+		background: var(--nav, #71018A);
+		box-shadow: 0 -4px 16px rgba(40, 0, 50, .22);
+	}
+	.lfar-action-bar .adopt-now {
+		position: static;
+		left: auto;
+		bottom: auto;
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		margin: 0;
+		padding: 12px 16px;
+		border-radius: 999px;
+		background: #fff;
+		color: var(--nav, #71018A) !important;
+		box-shadow: none;
+	}
+	.lfar-action-bar .adopt-now:hover,
+	.lfar-action-bar .adopt-now:focus-visible {
+		background: #fff;
+		color: var(--accent, #B209D7) !important;
+	}
+	.lfar-action-bar .adopt-now:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+	.lfar-action-bar .back-to-top {
+		position: static;
+		right: auto;
+		bottom: auto;
+		flex: 0 0 48px;
+		width: 48px;
+		height: 48px;
+		margin: 0;
+		border-radius: 12px;
+		opacity: 1;
+		visibility: visible;
+		transform: none;
+		background: transparent;
+		box-shadow: none;
+		border: 2px solid #fff;
+	}
+	.lfar-action-bar .back-to-top:hover,
+	.lfar-action-bar .back-to-top:focus-visible {
+		transform: none;
+		background: rgba(255, 255, 255, .14);
+	}
+	.lfar-action-bar .back-to-top:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+	.lfar-action-bar .back-to-top svg { stroke: #fff; }
+	html.lfar-bar-off .lfar-action-bar,
+	html.lfar-hero-cover .lfar-page-adopt .lfar-action-bar,
+	html.lfar-form-open .lfar-action-bar,
+	.lfar-page-adoption-form .lfar-action-bar,
 	html.lfar-hero-cover .lfar-page-adopt .adopt-now,
+	html.lfar-hero-cover .lfar-page-adopt .back-to-top,
 	html.lfar-form-open .adopt-now,
-	.lfar-page-adoption-form .adopt-now {
+	html.lfar-form-open .back-to-top,
+	.lfar-page-adoption-form .adopt-now,
+	.lfar-page-adoption-form .back-to-top {
 		display: none !important;
 	}
 }
@@ -672,6 +784,26 @@ h3.pet-name {
 		min-height: 0;
 		margin-top: 34px;
 		padding-block: 0 56px;
+	}
+}
+/* The phone scrollport stops above the bar. Shorten the hero photo so the
+   headline and the first paragraph still fit on the opening screen. */
+@media (max-width: 767px) {
+	.lfar-page-adopt .hero.night::before,
+	.lfar-page-adopt .hero.night figure.hero-bg,
+	.lfar-page-adopt .hero.night .wp-block-cover.hero-bg {
+		height: min(52vw, 210px);
+	}
+	.lfar-page-adopt .hero.night .container {
+		margin-top: 12px;
+		padding-block: 0 12px;
+	}
+	.lfar-page-adopt .night-card {
+		padding: 28px 18px 16px;
+	}
+	.lfar-page-adopt .night-card h1 {
+		font-size: 32px;
+		margin-bottom: 10px;
 	}
 }
 

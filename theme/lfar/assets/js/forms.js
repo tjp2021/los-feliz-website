@@ -3,6 +3,53 @@
 	var $ = function (s, c) { return (c || document).querySelector(s); };
 	var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
 
+	// One bar on phone and tablet. display:contents in CSS leaves the desktop
+	// pill and circle on the viewport, so this runs at every width.
+	var adoptNow = document.querySelector('.adopt-now');
+	var toTop = document.getElementById('toTop');
+	if ((adoptNow || toTop) && !(adoptNow && adoptNow.closest('.lfar-action-bar'))) {
+		var bar = document.createElement('div');
+		bar.className = 'lfar-action-bar';
+		bar.setAttribute('role', 'region');
+		bar.setAttribute('aria-label', 'Page actions');
+		if (adoptNow) bar.appendChild(adoptNow);
+		if (toTop) bar.appendChild(toTop);
+		document.body.appendChild(bar);
+	}
+	if (toTop) {
+		toTop.addEventListener('click', function (e) {
+			if (window.matchMedia('(min-width: 992px)').matches) return;
+			e.preventDefault();
+			e.stopPropagation();
+			document.body.scrollTo({ top: 0, behavior: 'smooth' });
+		}, true);
+	}
+	// Below 992px the page scrolls inside the body, above the bar. Arrow keys,
+	// page keys, and space still move that scroller when nothing else is typing.
+	var phoneBar = window.matchMedia('(max-width: 991px)');
+	window.addEventListener('keydown', function (e) {
+		if (!phoneBar.matches || document.body.classList.contains('lfar-page-adoption-form')) return;
+		if (e.altKey || e.metaKey || e.ctrlKey) return;
+		var tag = (e.target && e.target.tagName || '').toLowerCase();
+		if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+		var pageStep = Math.round(document.body.clientHeight * 0.85);
+		var delta = { ArrowDown: 72, ArrowUp: -72, PageDown: pageStep, PageUp: -pageStep };
+		if (e.key === ' ' && tag !== 'button' && tag !== 'a' && tag !== 'summary') delta[' '] = e.shiftKey ? -pageStep : pageStep;
+		if (e.key === 'Home') {
+			e.preventDefault();
+			document.body.scrollTo({ top: 0, behavior: 'smooth' });
+			return;
+		}
+		if (e.key === 'End') {
+			e.preventDefault();
+			document.body.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+			return;
+		}
+		if (!Object.prototype.hasOwnProperty.call(delta, e.key)) return;
+		e.preventDefault();
+		document.body.scrollBy({ top: delta[e.key], behavior: 'auto' });
+	});
+
 	// Old links to the foster form on the Adopt page now live under Get Involved.
 	if (location.hash === '#apply-foster' && /\/adopt\/?$/.test(location.pathname)) {
 		location.replace('/get-involved/#foster');
@@ -16,7 +63,9 @@
 	function syncAdoptNow() {
 		if (!applyBtn) return;
 		var onFormPage = /\/adoption-form\/?$/.test(location.pathname);
-		applyBtn.hidden = onFormPage || hideFor.apply || hideFor.hero || hideFor.form;
+		var off = onFormPage || hideFor.apply || hideFor.hero || hideFor.form;
+		applyBtn.hidden = off;
+		root.classList.toggle('lfar-bar-off', off);
 	}
 	window.lfarSyncAdoptNow = function (formOpen) {
 		hideFor.form = !!formOpen;
