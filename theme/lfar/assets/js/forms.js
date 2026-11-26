@@ -3,6 +3,53 @@
 	var $ = function (s, c) { return (c || document).querySelector(s); };
 	var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
 
+	// One bar on phone and tablet. display:contents in CSS leaves the desktop
+	// pill and circle on the viewport, so this runs at every width.
+	var adoptNow = document.querySelector('.adopt-now');
+	var toTop = document.getElementById('toTop');
+	if ((adoptNow || toTop) && !(adoptNow && adoptNow.closest('.lfar-action-bar'))) {
+		var bar = document.createElement('div');
+		bar.className = 'lfar-action-bar';
+		bar.setAttribute('role', 'region');
+		bar.setAttribute('aria-label', 'Page actions');
+		if (adoptNow) bar.appendChild(adoptNow);
+		if (toTop) bar.appendChild(toTop);
+		document.body.appendChild(bar);
+	}
+	if (toTop) {
+		toTop.addEventListener('click', function (e) {
+			if (window.matchMedia('(min-width: 992px)').matches) return;
+			e.preventDefault();
+			e.stopPropagation();
+			document.body.scrollTo({ top: 0, behavior: 'smooth' });
+		}, true);
+	}
+	// Below 992px the page scrolls inside the body, above the bar. Arrow keys,
+	// page keys, and space still move that scroller when nothing else is typing.
+	var phoneBar = window.matchMedia('(max-width: 991px)');
+	window.addEventListener('keydown', function (e) {
+		if (!phoneBar.matches || document.body.classList.contains('lfar-page-adoption-form')) return;
+		if (e.altKey || e.metaKey || e.ctrlKey) return;
+		var tag = (e.target && e.target.tagName || '').toLowerCase();
+		if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+		var pageStep = Math.round(document.body.clientHeight * 0.85);
+		var delta = { ArrowDown: 72, ArrowUp: -72, PageDown: pageStep, PageUp: -pageStep };
+		if (e.key === ' ' && tag !== 'button' && tag !== 'a' && tag !== 'summary') delta[' '] = e.shiftKey ? -pageStep : pageStep;
+		if (e.key === 'Home') {
+			e.preventDefault();
+			document.body.scrollTo({ top: 0, behavior: 'smooth' });
+			return;
+		}
+		if (e.key === 'End') {
+			e.preventDefault();
+			document.body.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+			return;
+		}
+		if (!Object.prototype.hasOwnProperty.call(delta, e.key)) return;
+		e.preventDefault();
+		document.body.scrollBy({ top: delta[e.key], behavior: 'auto' });
+	});
+
 	// Old links to the foster form on the Adopt page now live under Get Involved.
 	if (location.hash === '#apply-foster' && /\/adopt\/?$/.test(location.pathname)) {
 		location.replace('/get-involved/#foster');
@@ -11,21 +58,95 @@
 
 	var applyBtn = document.querySelector('.adopt-now');
 	var applySec = document.getElementById('apply');
+	var root = document.documentElement;
+	var hideFor = { apply: false, hero: !!root.classList.contains('lfar-hero-cover'), form: false };
+	function syncAdoptNow() {
+		if (!applyBtn) return;
+		var onFormPage = /\/adoption-form\/?$/.test(location.pathname);
+		var off = onFormPage || hideFor.apply || hideFor.hero || hideFor.form;
+		applyBtn.hidden = off;
+		root.classList.toggle('lfar-bar-off', off);
+	}
+	window.lfarSyncAdoptNow = function (formOpen) {
+		hideFor.form = !!formOpen;
+		if (formOpen) root.classList.add('lfar-form-open');
+		else root.classList.remove('lfar-form-open');
+		syncAdoptNow();
+	};
 	if (applyBtn && applySec && 'IntersectionObserver' in window) {
 		new IntersectionObserver(function (entries) {
-			applyBtn.hidden = entries[0].isIntersecting;
+			hideFor.apply = entries[0].isIntersecting;
+			syncAdoptNow();
 		}, { threshold: 0.2 }).observe(applySec);
 	}
+	var hero = document.querySelector('.lfar-page-adopt .hero');
+	if (applyBtn && hero && 'IntersectionObserver' in window) {
+		new IntersectionObserver(function (entries) {
+			hideFor.hero = entries[0].isIntersecting;
+			root.classList.toggle('lfar-hero-cover', hideFor.hero);
+			syncAdoptNow();
+		}, { threshold: 0 }).observe(hero);
+	}
+	syncAdoptNow();
 
-	// Adopt page: the Adopt / Foster cards switch between the two application forms.
+	// Adopt page: the form stays closed until Adopt or Foster is chosen.
 	var radios = $$('.lfar-intent input[name="intent"]');
 	if (radios.length) {
-		var sync = function () {
-			var v = (radios.filter(function (r) { return r.checked; })[0] || radios[0]).value;
-			$$('.lfar-form').forEach(function (f) { f.hidden = !f.classList.contains('lfar-form-' + v); });
-		};
-		radios.forEach(function (r) { r.addEventListener('change', sync); });
-		sync();
+		var chosen = '';
+		var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+		var forms = $$('#apply .lfar-form');
+		if (!forms.length) forms = $$('.lfar-form-adopt, .lfar-form-foster');
+
+		radios.forEach(function (r) { r.checked = false; });
+		var fieldset = $('.lfar-intent fieldset') || $('.lfar-intent');
+		if (fieldset && !$('#lfar-intent-hint')) {
+			var hint = document.createElement('p');
+			hint.className = 'intent-hint';
+			hint.id = 'lfar-intent-hint';
+			hint.textContent = 'Choose Adopt or Foster to open the form.';
+			fieldset.appendChild(hint);
+		}
+
+		function markShown(box) {
+			var done = false;
+			function finish(ev) {
+				if (done || (ev && ev.propertyName && ev.propertyName !== 'grid-template-rows')) return;
+				done = true;
+				if (box.classList.contains('is-open')) box.classList.add('is-shown');
+			}
+			box.addEventListener('transitionend', finish);
+			setTimeout(finish, reduced ? 0 : 700);
+		}
+		function sync(moveFocus) {
+			forms.forEach(function (f) {
+				var open = chosen && f.classList.contains('lfar-form-' + chosen);
+				if (!open) f.classList.remove('is-shown');
+				f.classList.toggle('is-open', !!open);
+				if (open) {
+					f.removeAttribute('inert');
+					if (!f.classList.contains('is-shown')) markShown(f);
+				} else {
+					f.setAttribute('inert', '');
+				}
+			});
+			if (window.lfarSyncAdoptNow) window.lfarSyncAdoptNow(!!chosen);
+			if (!moveFocus || !chosen) return;
+			var box = $('.lfar-form-' + chosen);
+			if (!box) return;
+			if (!box.hasAttribute('tabindex')) box.setAttribute('tabindex', '-1');
+			box.setAttribute('aria-label', chosen === 'foster' ? 'Foster application' : 'Adoption application');
+			box.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+			box.focus({ preventScroll: true });
+		}
+		forms.forEach(function (f) { f.setAttribute('inert', ''); });
+
+		radios.forEach(function (r) {
+			r.addEventListener('change', function () {
+				if (!r.checked) return;
+				chosen = r.value === 'foster' ? 'foster' : 'adopt';
+				sync(true);
+			});
+		});
 
 		var setValue = function (el, v) {
 			el.value = v;
@@ -33,8 +154,10 @@
 			el.dispatchEvent(new Event('change', { bubbles: true }));
 		};
 		var goTo = function (intent, pet, type) {
-			var r = radios.filter(function (x) { return x.value === intent; })[0];
-			if (r) { r.checked = true; sync(); }
+			chosen = intent === 'foster' ? 'foster' : 'adopt';
+			var r = radios.filter(function (x) { return x.value === chosen; })[0];
+			if (r) r.checked = true;
+			sync(true);
 			if (pet) {
 				var name = $('.lfar-form-adopt input[name="animal_name"]');
 				if (name) setValue(name, pet);
@@ -44,20 +167,29 @@
 				var k = $('.lfar-form-adopt input[name="animal_kind"][value="' + kind + '"]');
 				if (k && !k.checked) k.click();
 			}
-			var target = $('#signup') || $('#apply');
-			if (target) target.scrollIntoView({ behavior: 'smooth' });
 			if (r && r.nextElementSibling) {
 				var card = r.nextElementSibling;
 				card.classList.remove('pulse');
 				setTimeout(function () { card.classList.add('pulse'); }, 700);
 			}
 		};
-		// "Apply for ___" buttons on the pet cards
 		$$('.apply-for').forEach(function (b) { b.addEventListener('click', function () { goTo('adopt', b.dataset.pet, b.dataset.type || 'dog'); }); });
-		$$('.go-adopt').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); goTo('adopt'); }); });
-		$$('.go-foster').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); goTo('foster'); }); });
-		// links from other pages: /adopt/#apply-foster opens the foster form
-		if (location.hash === '#apply-foster') setTimeout(function () { goTo('foster'); }, 300);
+		document.addEventListener('click', function (e) {
+			if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+			var a = e.target.closest('a');
+			if (!a) return;
+			var href = a.getAttribute('href') || '';
+			var want = '';
+			if (a.classList.contains('go-foster')) want = 'foster';
+			else if (a.classList.contains('go-adopt') || href === '#apply' || /#apply$/.test(href) || (a.classList.contains('adopt-now') && /\/adopt\/?$/.test(location.pathname))) want = 'adopt';
+			if (!want) return;
+			e.preventDefault();
+			goTo(want);
+		});
+		// After the browser's own jump to #apply, or the form focus is lost.
+		if (location.hash === '#apply' || location.hash === '#signup') {
+			setTimeout(function () { goTo('adopt'); }, 80);
+		}
 	} else {
 		// Foster is its own form on Get Involved, so the Adopt page has no toggle.
 		$$('.apply-for').forEach(function (b) {

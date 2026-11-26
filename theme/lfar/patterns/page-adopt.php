@@ -8,9 +8,9 @@
  */
 ?>
 <!-- wp:group {"templateLock":"contentOnly","tagName":"section","className":"hero night"} -->
-<section class="wp-block-group hero night"><!-- wp:html -->
-<canvas aria-hidden="true" id="city"></canvas>
-<!-- /wp:html -->
+<section class="wp-block-group hero night"><!-- wp:image {"className":"hero-bg"} -->
+<figure class="wp-block-image hero-bg"><img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/about-hero-bg.webp' ) ); ?>" alt="A woman kneeling in the grass, greeting a tan dog"/></figure>
+<!-- /wp:image -->
 
 <!-- wp:group {"className":"container"} -->
 <div class="wp-block-group container"><!-- wp:group {"className":"hero-card night-card"} -->

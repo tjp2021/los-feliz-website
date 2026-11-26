@@ -9,7 +9,10 @@
  * Mobile sizes stay as each page stylesheet set them. Melody said stacked mobile text already reads fine.
  */
 
-/* Sticky adoption application. Back-to-top stays on the right. */
+/* Sticky adoption application. From 992px up it stays a corner pill, with
+   back-to-top as its own circle. forms.js puts both in .lfar-action-bar;
+   display:contents keeps the desktop positions on the viewport. */
+.lfar-action-bar { display: contents; }
 .adopt-now {
 	position: fixed;
 	z-index: 75;
@@ -35,9 +38,132 @@
 }
 .adopt-now[hidden] { display: none !important; }
 
-/* The window stays the scroller. This padding is the button height plus its offset,
-   so the copyright line sits above the button and hiding the button does not move the page. */
-body { padding-bottom: 72px; }
+/* Desktop: clear the corner controls. The padding stays while the pill is
+   hidden so the page does not jump. The pill is a little narrower than the
+   base rule so at 1440 it stays in the gutter, left of the 1170px column. */
+@media (min-width: 992px) {
+	.adopt-now { padding: 12px 16px; }
+	body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+	html { scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Phone and tablet: one solid bar. Adopt now fills the row; back-to-top is
+   the icon on the right. Bar height and body padding are the same value, so
+   the last line of the footer sits above the bar. Padding stays when the bar
+   hides over the Adopt hero or an open application (no jump). The adoption
+   form page never shows the bar, so it drops the padding. */
+@media (max-width: 991px) {
+	/* The bar is as tall as this inset. The page scrolls in the space above
+	   it, so a line of text can reach the bar and cannot slide underneath.
+	   The inset stays while the bar is hidden (hero, open application) so the
+	   page does not jump. The adoption form page has no bar and no inset. */
+	html {
+		height: 100%;
+		overflow: hidden;
+		background: #fff;
+	}
+	body {
+		box-sizing: border-box;
+		height: calc(100% - 64px - env(safe-area-inset-bottom, 0px));
+		max-height: calc(100% - 64px - env(safe-area-inset-bottom, 0px));
+		margin-bottom: 0;
+		overflow: auto;
+		padding-bottom: 0;
+		scroll-padding-bottom: 8px;
+	}
+	html:has(body.lfar-page-adoption-form) {
+		height: auto;
+		overflow: visible;
+	}
+	body.lfar-page-adoption-form {
+		height: auto;
+		max-height: none;
+		overflow: visible;
+		padding-bottom: 0;
+	}
+	body:not(:has(.lfar-action-bar)) .adopt-now,
+	body:not(:has(.lfar-action-bar)) #toTop {
+		visibility: hidden;
+	}
+	.lfar-action-bar {
+		display: flex;
+		position: fixed;
+		z-index: 80;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		align-items: center;
+		gap: 8px;
+		box-sizing: border-box;
+		height: calc(64px + env(safe-area-inset-bottom, 0px));
+		padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+		background: var(--nav, #71018A);
+		box-shadow: 0 -4px 16px rgba(40, 0, 50, .22);
+	}
+	.lfar-action-bar .adopt-now {
+		position: static;
+		left: auto;
+		bottom: auto;
+		flex: 1 1 auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 48px;
+		margin: 0;
+		padding: 12px 16px;
+		border-radius: 999px;
+		background: #fff;
+		color: var(--nav, #71018A) !important;
+		box-shadow: none;
+	}
+	.lfar-action-bar .adopt-now:hover,
+	.lfar-action-bar .adopt-now:focus-visible {
+		background: #fff;
+		color: var(--accent, #B209D7) !important;
+	}
+	.lfar-action-bar .adopt-now:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+	.lfar-action-bar .back-to-top {
+		position: static;
+		right: auto;
+		bottom: auto;
+		flex: 0 0 48px;
+		width: 48px;
+		height: 48px;
+		margin: 0;
+		border-radius: 12px;
+		opacity: 1;
+		visibility: visible;
+		transform: none;
+		background: transparent;
+		box-shadow: none;
+		border: 2px solid #fff;
+	}
+	.lfar-action-bar .back-to-top:hover,
+	.lfar-action-bar .back-to-top:focus-visible {
+		transform: none;
+		background: rgba(255, 255, 255, .14);
+	}
+	.lfar-action-bar .back-to-top:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: 2px;
+	}
+	.lfar-action-bar .back-to-top svg { stroke: #fff; }
+	html.lfar-bar-off .lfar-action-bar,
+	html.lfar-hero-cover .lfar-page-adopt .lfar-action-bar,
+	html.lfar-form-open .lfar-action-bar,
+	.lfar-page-adoption-form .lfar-action-bar,
+	html.lfar-hero-cover .lfar-page-adopt .adopt-now,
+	html.lfar-hero-cover .lfar-page-adopt .back-to-top,
+	html.lfar-form-open .adopt-now,
+	html.lfar-form-open .back-to-top,
+	.lfar-page-adoption-form .adopt-now,
+	.lfar-page-adoption-form .back-to-top {
+		display: none !important;
+	}
+}
 
 /* Photo heroes match the About map header Melody liked (about 460–560px), and grow if the card needs it. */
 @media (min-width: 992px) {
@@ -83,7 +209,7 @@ body { padding-bottom: 72px; }
 }
 /* Body copy from 768 up. The 992-only block left tablet at the old 16px. */
 @media (min-width: 768px) {
-	.fw p:not(.header-p):not(.eyebrow):not(.subhead):not(.stories-sub):not(.person-role):not(.pet-facts):not(.fine):not(.src):not(.tales-note):not(.feed-note):not(.step-when):not(.mission-text),
+	.fw p:not(.header-p):not(.eyebrow):not(.subhead):not(.stories-sub):not(.person-role):not(.pet-facts):not(.fine):not(.src):not(.tales-note):not(.tails-note):not(.feed-note):not(.step-when):not(.mission-text),
 	.news-body p,
 	.story-body p,
 	.fact-body p,
@@ -263,6 +389,7 @@ h1,
 .fine,
 .src,
 .tales-note,
+.tails-note,
 .feed-note,
 .nl-note,
 .stat-note,
@@ -454,7 +581,7 @@ h3.pet-name {
 	line-height: 1.2;
 }
 /* Adopt's note uses !important, so the scale has to as well. */
-.tales-note { font-size: var(--lfar-small) !important; }
+:is(.tales-note, .tails-note) { font-size: var(--lfar-small) !important; }
 /* Roles and step kickers are eyebrows. The body rule is specific enough to catch them otherwise. */
 .person p.person-role,
 .step p.step-when {
@@ -466,3 +593,259 @@ h3.pet-name {
 	text-transform: uppercase;
 }
 .about-map-hero .places li.anchor { font-size: var(--lfar-small); }
+
+/* Team and board cards: one width, one photo size, one text alignment at every width.
+   Saved About pages keep their own cards, so this has to live in CSS, not the pattern. */
+.lfar-page-about .board,
+.lfar-page-about .board.two {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 24px;
+	width: 100%;
+	max-width: 1080px;
+	margin-inline: auto;
+	align-items: stretch;
+}
+.lfar-page-about .board > .person {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	height: 100%;
+	margin: 0;
+	padding: 28px 22px 24px;
+	text-align: center;
+	background: var(--white, #fff);
+	border: 5px solid var(--accent-soft, #E2B4F0);
+	border-radius: var(--irregular, 155px 45px 225px 75px / 15px 125px 15px 155px);
+}
+.lfar-page-about .board > .person > * {
+	margin-block-start: 0;
+	margin-block-end: 0;
+}
+.lfar-page-about .person .avatar,
+.lfar-page-about .person .avatar.photo {
+	position: relative;
+	display: block;
+	width: 120px;
+	height: 120px;
+	min-width: 120px;
+	min-height: 120px;
+	max-width: 120px;
+	max-height: 120px;
+	flex: 0 0 120px;
+	margin: 0 auto 16px;
+	overflow: hidden;
+	border-radius: 50%;
+	border: 4px solid var(--accent-soft, #E2B4F0);
+	background: var(--light, #F5F5F5);
+}
+.lfar-page-about .person .avatar .wp-block-image,
+.lfar-page-about .person .avatar figure,
+.lfar-page-about .person .avatar img {
+	position: absolute;
+	inset: 0;
+	width: 120px;
+	height: 120px;
+	max-width: none;
+	margin: 0;
+	object-fit: cover;
+	object-position: center 18%;
+}
+.lfar-page-about .person .avatar figcaption {
+	display: none;
+}
+.lfar-page-about .person h4 {
+	display: block;
+	width: 100%;
+	min-height: 2.6em;
+	margin: 0 0 6px;
+	text-align: center;
+	text-wrap: balance;
+}
+.lfar-page-about .person .person-role {
+	display: block;
+	width: 100%;
+	min-height: 2.6em;
+	margin: 0 0 12px;
+	text-align: center;
+}
+.lfar-page-about .person p:not(.person-role) {
+	width: 100%;
+	margin: 0;
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+.lfar-page-about .person p:empty {
+	display: none;
+}
+@media (max-width: 900px) {
+	.lfar-page-about .board,
+	.lfar-page-about .board.two {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		max-width: 720px;
+	}
+}
+@media (max-width: 600px) {
+	.lfar-page-about .board,
+	.lfar-page-about .board.two {
+		grid-template-columns: minmax(0, 1fr);
+		max-width: 420px;
+	}
+}
+
+/* Adopt hero: a still photo. The saved page still contains the canvas sketch;
+   this hides it. A Cover or Image block with class hero-bg replaces the photo
+   and keeps that block's focal point (inline object-position). */
+.lfar-page-adopt .hero.night {
+	background-color: #3B2940;
+	background-image: url("../images/about-hero-bg.webp");
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center 42%;
+}
+.lfar-page-adopt .hero.night canvas {
+	display: none;
+}
+.lfar-page-adopt .hero.night:has(figure.hero-bg img),
+.lfar-page-adopt .hero.night:has(.wp-block-cover.hero-bg img) {
+	background-image: none;
+}
+.lfar-page-adopt .hero.night figure.hero-bg,
+.lfar-page-adopt .hero.night .wp-block-cover.hero-bg {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	min-height: 0 !important;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: 0;
+}
+.lfar-page-adopt .hero.night figure.hero-bg img,
+.lfar-page-adopt .hero.night .wp-block-cover__image-background {
+	width: 100%;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: 68% 42%;
+}
+.lfar-page-adopt .hero.night .wp-block-cover__background {
+	opacity: 0;
+}
+.lfar-page-adopt .hero.night .container {
+	position: relative;
+	z-index: 1;
+}
+.lfar-page-adopt .hero.night .hero-bg,
+.js .lfar-page-adopt .hero.night:not(.go) .hero-bg,
+.lfar-page-adopt .hero.night.go .hero-bg {
+	opacity: 1;
+	animation: none;
+	transform: none;
+}
+@media (min-width: 992px) {
+	.lfar-page-adopt .hero.night {
+		background-position: 68% 42%;
+	}
+}
+@media (max-width: 991px) {
+	.lfar-page-adopt .hero.night {
+		display: flex;
+		flex-direction: column;
+		height: auto;
+		background-image: none;
+	}
+	.lfar-page-adopt .hero.night::before {
+		content: "";
+		display: block;
+		height: min(88vw, 420px);
+		background: #3B2940 url("../images/about-hero-bg.webp") center 42% / cover no-repeat;
+	}
+	.lfar-page-adopt .hero.night:has(figure.hero-bg img)::before,
+	.lfar-page-adopt .hero.night:has(.wp-block-cover.hero-bg img)::before {
+		display: none;
+	}
+	.lfar-page-adopt .hero.night figure.hero-bg,
+	.lfar-page-adopt .hero.night .wp-block-cover.hero-bg {
+		position: relative;
+		inset: auto;
+		flex: 0 0 auto;
+		height: min(88vw, 420px);
+	}
+	.lfar-page-adopt .hero.night .container {
+		height: auto;
+		min-height: 0;
+		margin-top: 34px;
+		padding-block: 0 56px;
+	}
+}
+/* The phone scrollport stops above the bar. Shorten the hero photo so the
+   headline and the first paragraph still fit on the opening screen. */
+@media (max-width: 767px) {
+	.lfar-page-adopt .hero.night::before,
+	.lfar-page-adopt .hero.night figure.hero-bg,
+	.lfar-page-adopt .hero.night .wp-block-cover.hero-bg {
+		height: min(52vw, 210px);
+	}
+	.lfar-page-adopt .hero.night .container {
+		margin-top: 12px;
+		padding-block: 0 12px;
+	}
+	.lfar-page-adopt .night-card {
+		padding: 28px 18px 16px;
+	}
+	.lfar-page-adopt .night-card h1 {
+		font-size: 32px;
+		margin-bottom: 10px;
+	}
+}
+
+/* QR instructions, shown with ?stay=1 and in the editor. Visitors are redirected. */
+.lfar-qr-page {
+	background: var(--wp--preset--color--light, #F5F5F5);
+	padding-block: var(--lfar-section, 96px);
+}
+.lfar-qr-page .container {
+	max-width: 720px;
+}
+.lfar-qr-page .section-heading,
+.lfar-qr-page h1,
+.lfar-qr-page .subhead,
+.lfar-qr-page .lfar-qr-note {
+	text-align: center;
+}
+.lfar-qr-page h1 {
+	font-family: var(--wp--preset--font-family--heading);
+	font-weight: 700;
+	font-size: var(--lfar-h1, 48px);
+	line-height: var(--lfar-lh-heading, 1.2);
+	color: var(--wp--preset--color--head, #675444);
+	margin: 0 0 12px;
+}
+.lfar-qr-page .subhead,
+.lfar-qr-page .lfar-qr-note {
+	max-width: 46ch;
+	margin-inline: auto;
+	color: var(--wp--preset--color--ink, #6B6B6B);
+	font-size: var(--lfar-lead, 20px);
+	line-height: var(--lfar-lh-lead, 1.55);
+}
+.lfar-qr-page .lfar-qr-note {
+	margin-top: 28px;
+	font-size: var(--lfar-small, 15px);
+}
+.lfar-qr-destination {
+	display: flex;
+	justify-content: center;
+	margin-top: 8px;
+}
+.lfar-qr-destination .btn {
+	margin-top: 0;
+}
